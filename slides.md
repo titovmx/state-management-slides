@@ -20,6 +20,12 @@ drawings:
 transition: slide-left
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
+themeConfig:
+  primary: '#959CF5'
+fonts:
+  sans: Roboto
+  serif: Roboto Slab
+  mono: Fira Code
 ---
 
 # Рецепты MobX
@@ -28,13 +34,50 @@ mdc: true
 
 ---
 
-# О себе
+<style>
+.photo {
+  border-radius: 50%;
+  border: 0.125rem solid #4040DC;
+  width: 12rem;
+  height: 12rem;
+}
 
-[Вставить фото]
+.logo {
+  height: 2rem;
+}
 
-## Макс Титов
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
 
-Senior Frontend Developer @ Qase [Вставить лого]
+.content {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+}
+
+.info {
+   display: flex;
+   flex-direction: column;
+   gap: 0.5rem;
+   justify-content: center;
+   align-items: flex-start;
+}
+</style>
+
+<div class='container'>
+  <h1>О себе</h1>
+  <div class='content'>
+    <img src='/photo.jpg' class='photo' />
+    <div class='info'>
+      <h2>Максим Титов</h2>
+      <h3>Senior Frontend Engineer</h3>
+      <img src='/qase.png' class='logo' />
+    </div>
+  </div>
+</div>
 
 ---
 
@@ -54,13 +97,13 @@ Senior Frontend Developer @ Qase [Вставить лого]
 
 <br/>
 
-#### Состояние - данные приложения, которые могут поменяться.
+#### <span style="color: #C4CAFF;">Состояние</span> - данные приложения, которые могут поменяться.
 
 <br/>
 
 <v-click>
 
-#### Управление включает:
+#### <span style="color: #C4CAFF;">Управление</span> включает:
 
 - хранение
 - обновление
@@ -70,7 +113,7 @@ Senior Frontend Developer @ Qase [Вставить лого]
 
 ---
 
-# Варианты
+# Решения
 
 - React
 - Бесконечное число библиотек:
@@ -83,35 +126,44 @@ Senior Frontend Developer @ Qase [Вставить лого]
   - ...
 
 ---
+layout: TwoColumnCode
+---
 
 # Управление состоянием в React
 
-##### useState & useReducer
+::left::
+
+#### React Hooks
+
+- useState
+- useReducer
+
+::right::
 
 ```js
-const initialState = { count: 0 };
+  const initialState = { count: 0 };
 
-function reducer(state, action) {
-  switch (action.type) {
-    case 'increment':
-      return { count: state.count + 1 };
-    case 'decrement':
-      return { count: state.count - 1 };
-    default:
-      throw new Error(`Unknown action ${action.type}`);
+  function reducer(state, aqction) {
+    switch (action.type) {
+      case 'increment':
+        return { count: state.count + 1 };
+      case 'decrement':
+        return { count: state.count - 1 };
+      default:
+        throw new Error(`Unknown action ${action.type}`);
+    }
   }
-}
 
-function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  function App() {
+    const [state, dispatch] = useReducer(reducer, initialState);
 
-  return (
-    <div>
-      <CounterDisplay count={state.count} />
-      <CounterControls dispatch={dispatch} />
-    </div>
-  );
-}
+    return (
+      <div>
+        <CounterDisplay count={state.count} />
+        <CounterControls dispatch={dispatch} />
+      </div>
+    );
+  }
 ```
 
 ---
@@ -149,7 +201,7 @@ function Folder({folder, userPermissions}) {
 
 # Управление состоянием в React
 
-#### <b>React Context</b> позволяет использовать значения во вложенных компонентах
+#### <b style="color: #C4CAFF;">React Context</b> позволяет передавать значения во вложенные компоненты
 
 <br />
 
@@ -172,7 +224,7 @@ function AppProvider({ children }) {
 
 # Управление состоянием в React
 
-#### <b>React Context</b> позволяет использовать значения во вложенных компонентах
+#### <b style="color: #C4CAFF;">React Context</b> позволяет передавать значения во вложенные компоненты
 
 ```js
 function App() {
@@ -205,19 +257,17 @@ function Actions({ userPermissions }) {
 
 <br />
 
-#### Проблемы
+<span style="color: #FFD666">⚠️</span> React Context - механизм инъекции зависимостей, <b>НЕ</b> управления состоянием
+
+<br />
+
+<v-click>
+<h4 style='color: #FF859D;'>ПРОБЛЕМЫ</h4>
 
 - Производительность
 - Boilerplate
 - Масштабирование
 - Отладка
-
-<br />
-
-<v-click>
-
-⚠️ React Context - механизм инъекции зависимостей, <b>НЕ</b> управления состоянием
-
 </v-click>
 
 ---
@@ -312,7 +362,7 @@ const useLoadFolders = () => {
 
 <br />
 
-#### Проблемы
+<h4 style='color: #FF859D;'>ПРОБЛЕМЫ</h4>
 
 - Производительность
 - Сложность работы с асинхронными вызовами
@@ -329,7 +379,7 @@ const useLoadFolders = () => {
 
 <br />
 
-#### Usage
+#### <b style="color: #C4CAFF;">Usage</b>
 
 | Redux | MobX | XState |
 | ----- | ---- | ------ |
@@ -337,7 +387,7 @@ const useLoadFolders = () => {
 
 <br />
 
-#### Satisfaction
+#### <b style="color: #C4CAFF;">Satisfaction</b>
 
 | Redux | MobX | XState |
 | ----- | ---- | ------ |
@@ -349,7 +399,7 @@ const useLoadFolders = () => {
 
 <br />
 
-#### npm-загрузки (в неделю)
+#### <b style="color: #C4CAFF;">npm-загрузки (в неделю)</b>
 
 | Библиотека | Загрузки |
 | ---------- | -------- |
@@ -393,6 +443,8 @@ function CounterControls() {
 # Zustand
 
 <br />
+
+#### <b style="color: #6EF0B3;">ПРЕИМУЩЕСТВА</b>
 
 - Не требует провайдеров
 - Простой, меньше бойлерплейта
@@ -464,6 +516,8 @@ function CounterControls({ dispatch }) {
 # XState
 
 <br />
+
+#### <b style="color: #6EF0B3;">ПРЕИМУЩЕСТВА</b>
 
 - Машина состояний позволяет описывать сложные состояния и переходы между ними
 - Простые асинхронные обновления
@@ -547,7 +601,9 @@ const CounterControls = () => {
 
 <br />
 
-### Проблема
+### <span style="color: #FF859D;">Проблема</span>
+
+<br />
 
 - глобальный объект, создаётся при загрузке файла
 - тестируемость
@@ -556,7 +612,7 @@ const CounterControls = () => {
 
 <v-click>
 
-### Решение
+### <span style="color: #6EF0B3;">Решение</span>
 
 Связать состояние с React-компонентами с помощью React.Context
 </v-click>
@@ -656,7 +712,7 @@ const CounterControls = () => {
 
 <br />
 
-### Проблема
+### <span style="color: #FF859D;">Проблема</span>
 
 Мы хотим иметь изолированное хранилище для части приложения, но оно имеет зависимости от корневого или других хранилищ
 
@@ -664,7 +720,7 @@ const CounterControls = () => {
 
 <v-click>
 
-### Решение
+### <span style="color: #6EF0B3;">Решение</span>
 
 Добавить механизмы для внедрения зависимостей
 
@@ -800,7 +856,7 @@ export const { StoreProvider: FolderStoreProvider, useStore: useFolderStore } =
 
 <br />
 
-### Проблема
+### <span style="color: #FF859D;">Проблема</span>
 
 Мы хотим иметь автоматические действия после инициализации хранилища, например, загрузить данные
 
@@ -808,7 +864,7 @@ export const { StoreProvider: FolderStoreProvider, useStore: useFolderStore } =
 
 <v-click>
 
-### Решение
+### <span style="color: #6EF0B3;">Решение</span>
 
 Добавить в хранилище реакции и механизм подписки
 
@@ -868,7 +924,7 @@ export const getStoreProvider = (StoreClass) => {
 
 <br />
 
-### Проблема
+### <span style="color: #FF859D;">Проблема</span>
 
 Разные страницы могут иметь повторяющуюся функциональность: состояние и действия
 
@@ -878,7 +934,7 @@ export const getStoreProvider = (StoreClass) => {
 
 <v-click>
 
-### Решение
+### <span style="color: #6EF0B3;">Решение</span>
 
 Использовать вспомогательные хранилища (utility stores)
 </v-click>
@@ -986,20 +1042,68 @@ export const SortableHeader = observer(({ orderBy }) => {
 
 # Как MobX помог решить проблемы Redux
 
-- Производительность<v-click> -> нет повторных рендеров и сложных селекторов</v-click>
-- Сложность работы с асинхронными вызовами<v-click> -> никаких мидлвар</v-click>
-- Boilerplate (action creators, reducers, cached selectors)<v-click> -> всё необходимое инкапуслировано внутри класса</v-click>
-- Иммутабельность<v-click> -> Реактивность</v-click>
+<br />
+
+- #### Производительность
+
+<v-click>
+
+&nbsp;<span style="color: #6EF0B3;">-></span> нет повторных рендеров и сложных селекторов
+
+</v-click>
+
+- #### Сложность работы с асинхронными вызовами
+
+<v-click>
+
+&nbsp;<span style="color: #6EF0B3;">-></span> никаких мидлвар
+
+</v-click>
+
+- #### Boilerplate (action creators, reducers, cached selectors)
+
+<v-click>
+
+&nbsp;<span style="color: #6EF0B3;">-></span> всё необходимое инкапуслировано внутри класса
+
+</v-click>
+
+- #### Иммутабельность
+
+<v-click>
+
+&nbsp;<span style="color: #6EF0B3;">-></span> Реактивность
+
+</v-click>
 
 ---
-
-# Как MobX снизил количество кода? Ускорил разработку?
-
-Анализ [Опционально]
-
+layout: center
 ---
 
-Спасибо за внимание!
+<style>
+.contacts {
+  margin: 3rem auto 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
 
-иконки телеграм, linkedin, github, dev.to
-@titovmx
+.icons {
+  display: flex;
+  gap: 1rem;
+}
+</style>
+
+# Спасибо за внимание!
+
+<h3 class="contacts">
+  @titovmx
+  <span class="icons">
+    <i class="fab fa-telegram" />
+    <i class="fab fa-linkedin" />
+    <i class="fab fa-github" />
+  </span>
+</h3>
