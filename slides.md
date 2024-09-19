@@ -26,6 +26,7 @@ fonts:
   sans: Roboto
   serif: Roboto Slab
   mono: Fira Code
+lineNumbers: true
 ---
 
 # Рецепты MobX
@@ -86,9 +87,7 @@ fonts:
 <br/>
 
 - Зачем нам управление состоянием
-- Что не так с Redux
-- Какие альтернативы
-- Что так с MobX
+- Redux, его проблемы и альтернативы
 - Примеры использования MobX и продвинутые практики
 
 ---
@@ -133,6 +132,8 @@ layout: TwoColumnCode
 
 ::left::
 
+На уровне компонентов
+
 #### React Hooks
 
 - useState
@@ -141,9 +142,7 @@ layout: TwoColumnCode
 ::right::
 
 ```js
-  const initialState = { count: 0 };
-
-  function reducer(state, aqction) {
+  function reducer(state, action) {
     switch (action.type) {
       case 'increment':
         return { count: state.count + 1 };
@@ -155,7 +154,8 @@ layout: TwoColumnCode
   }
 
   function App() {
-    const [state, dispatch] = useReducer(reducer, initialState);
+    // const [count, setCount] = useState(0)
+    const [state, dispatch] = useReducer(reducer, { count: 0 });
 
     return (
       <div>
@@ -165,6 +165,14 @@ layout: TwoColumnCode
     );
   }
 ```
+
+---
+layout: center
+---
+
+# Файловый редактор
+
+<img src="/folders_example.png" width="500rem" />
 
 ---
 
@@ -209,11 +217,11 @@ function Folder({folder, userPermissions}) {
 const AppContext = createContext();
 
 function AppProvider({ children }) {
-  const [folders, setFolders] = useState([]);
-  const [userPermissions, setUserPermissions] = useState([]);
+  const [folders, _] = useState([]);
+  const [userPermissions, _] = useState([]);
 
   return (
-    <AppContext.Provider value={{ folders, userPermissions, setFolders, setUserPermissions }}>
+    <AppContext.Provider value={{ folders, userPermissions }}>
       {children}
     </AppContext.Provider>
   );
@@ -257,12 +265,15 @@ function Actions({ userPermissions }) {
 
 <br />
 
-<span style="color: #FFD666">⚠️</span> React Context - механизм инъекции зависимостей, <b>НЕ</b> управления состоянием
+<span style="color: #FFD666">⚠️</span> React Context - механизм инъекции зависимостей, <b style='color: #FF859D;'>НЕ</b> управления состоянием
 
 <br />
 
 <v-click>
+
 <h4 style='color: #FF859D;'>ПРОБЛЕМЫ</h4>
+
+<br />
 
 - Производительность
 - Boilerplate
@@ -270,9 +281,30 @@ function Actions({ userPermissions }) {
 - Отладка
 </v-click>
 
+<br />
+
+<v-click>
+
+Подходит для небольшого количества редко изменяющихся данных
+
+</v-click>
+
+---
+layout: TwoColumnCode
 ---
 
 # Redux
+
+::left::
+
+<br />
+
+- State
+- Reducers
+- Actions
+- Slices
+
+::right::
 
 ```js
 export const setFolders = (folders) => ({
@@ -302,21 +334,22 @@ const store = createStore(rootReducer);
 ```
 
 ---
+layout: TwoColumnCode
+---
 
 # Redux
 
-```js
-function App() {
-  return (
-    <Provider store={store}>
-      <div>
-        <Sidebar />
-        <MainContent />
-      </div>
-    </Provider>
-  );
-}
+::left::
 
+<br />
+
+- <b style="color: #C4CAFF;">Selectors</b>
+- Cached Selectors
+- Cached Selectors with dynamic keys
+
+::right::
+
+```js
 function Actions({ userPermissions }) {
   const userPermissions = useSelector((state) => state.userPermissions);
   const { canEdit, canDelete } = userPermissions;
@@ -331,8 +364,115 @@ function Actions({ userPermissions }) {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
 # Redux
+
+::left::
+
+<br />
+
+- Selectors
+- <b style="color: #C4CAFF;">Cached Selectors</b>
+- Cached Selectors with dynamic keys
+
+::right::
+
+```js
+const getUserPermissions = (state) => state.userPermissions;
+const getCanEditPermission = createSelector(
+  [getUserPermissions],
+  (userPermissions) => userPermissions.canEdit
+)
+```
+
+---
+layout: TwoColumnCode
+---
+
+# Redux
+
+::left::
+
+<br />
+
+- Selectors
+- Cached Selectors
+- <b style="color: #C4CAFF;">Cached Selectors with dynamic keys</b>
+
+::right::
+
+```js
+const getUserPermissions = (state) => state.userPermissions;
+const getUserPermissionsByFolderId = 
+  (state, folderId) => state.userPermissionsByFolderId[folderId];
+
+const getCanEditPermission = createCachedSelector(
+  getUserPermissionsByFolderId,
+  (userPermissionsByFolderId) => userPermissionsByFolderId.canEdit
+)(
+  (_, folderId) => folderId
+)
+```
+
+---
+layout: two-cols-header
+---
+
+# Redux
+
+::left::
+
+```js
+const getCanEditProject = createCachedSelector(
+  getUserPermissions,
+  getProjectPermissionsById,
+  getUserRole,
+  getProjectArchivedStatus,
+  getProjectStatus,
+  getProjectLockedStatus,
+  getFolderRestrictionsById,
+  getUserSubscriptionTier,
+  (
+    userPermissions, 
+    projectPermissions, 
+    userRole, 
+    isArchived, 
+    projectStatus, 
+    isLocked,
+    folderRestrictions, 
+    subscriptionTier
+  ) => {
+    // ...
+  }
+)(
+  (_, projectId, folderId) => `${projectId}-${folderId}`
+);
+```
+
+::right::
+
+<br />
+
+<v-click>
+  <img src="/tinkov.png" />
+</v-click>
+
+---
+layout: TwoColumnCode
+---
+
+# Redux
+
+::left::
+
+<br />
+
+- Side effects
+- Middlewares
+
+::right::
 
 ```js
 import thunk from 'redux-thunk';
@@ -357,6 +497,99 @@ const useLoadFolders = () => {
 ```
 
 ---
+layout: TwoColumnCode
+---
+
+# Redux
+
+::left::
+
+```js
+export const setFolders = (folders) => ({
+  type: 'SET_FOLDERS',
+  payload: folders,
+});
+
+export const setUserPermissions = (permissions) => ({
+  type: 'SET_USER_PERMISSIONS',
+  payload: permissions,
+});
+
+function rootReducer(state = initialState, action) {
+  // ...
+}
+```
+
+::right::
+
+А что если добавить TypeScript?
+
+---
+layout: two-cols-header
+zoom: 0.8
+---
+
+# Redux
+
+::left::
+
+```js
+export const setFolders = (folders) => ({
+  type: 'SET_FOLDERS',
+  payload: folders,
+});
+
+export const setUserPermissions = (permissions) => ({
+  type: 'SET_USER_PERMISSIONS',
+  payload: permissions,
+});
+
+function rootReducer(state = initialState, action) {
+  // ...
+}
+```
+
+<br />
+
+<img src="/mnogobukv.png" width="250rem" />
+
+::right::
+
+```js
+interface RootState {
+  folders: Folder[];
+  userPermissions: UserPermissions;
+}
+
+const SET_FOLDERS = 'SET_FOLDERS';
+const SET_USER_PERMISSIONS = 'SET_USER_PERMISSIONS';
+
+interface SetFoldersAction extends Action<typeof SET_FOLDERS> {
+  payload: Folder[];
+}
+
+interface SetUserPermissionsAction extends Action<typeof SET_USER_PERMISSIONS> {
+  payload: UserPermissions;
+}
+
+type RootAction = SetFoldersAction | SetUserPermissionsAction;
+
+export const setFolders = (folders: Folder[]): SetFoldersAction => ({
+  type: SET_FOLDERS,
+  payload: folders,
+});
+
+export const setUserPermissions = (permissions: UserPermissions): SetUserPermissionsAction => ({
+  type: SET_USER_PERMISSIONS,
+  payload: permissions,
+});
+
+function rootReducer(state = initialState, action: RootAction): RootState {
+  // ...
+}
+```
+
+---
 
 # Redux
 
@@ -364,9 +597,12 @@ const useLoadFolders = () => {
 
 <h4 style='color: #FF859D;'>ПРОБЛЕМЫ</h4>
 
+<br />
+
 - Производительность
-- Сложность работы с асинхронными вызовами
 - Boilerplate (action creators, reducers, cached selectors)
+- Сложность работы с асинхронными вызовами
+- Типизация
 - Иммутабельность
 
 ---
@@ -405,111 +641,27 @@ const useLoadFolders = () => {
 | ---------- | -------- |
 | redux      | 9.98m    |
 | zustand    | 3.66m    |
-| xstate     | 1.47m    |
 | mobx       | 1.47m    |
+| xstate     | 1.47m    |
 | jotai      | 1.05m    |
 
 ---
 
-# Zustand
-
-```js
-const useStore = create((set) => ({
-  count: 0,
-  increment: () => set((state) => ({ count: state.count + 1 })),
-  decrement: () => set((state) => ({ count: state.count - 1 })),
-}));
-
-function CounterDisplay() {
-  const count = useStore((state) => state.count);
-  return <div>Count: {count}</div>;
-}
-
-function CounterControls() {
-  const increment = useStore((state) => state.increment);
-  const decrement = useStore((state) => state.decrement);
-
-  return (
-    <div>
-      <button onClick={increment}>Increment</button>
-      <button onClick={decrement}>Decrement</button>
-    </div>
-  );
-}
-```
-
----
-
-# Zustand
+# Zustand | Jotai | Recoil
 
 <br />
 
-#### <b style="color: #6EF0B3;">ПРЕИМУЩЕСТВА</b>
+- <b style="color: #C4CAFF;">\[Zustand]</b> Глобально доступные хранилища <span style="color: #6EF0B3;">-></span> не требует провайдеров
 
-- Не требует провайдеров
-- Простой, меньше бойлерплейта
-- Встроенная в селекторы мемоизация
+- <b style="color: #C4CAFF;">\[Jotai | Recoil]</b> Атомизация <span style="color: #6EF0B3;">-></span> избегают необходимости оптимизаций с селекторами
+
+- Минималистичность, связанность, меньше бойлерплейта
+
 - Простые асинхронные обновления состояния
 
----
+<br />
 
-# XState
-
-```js
-const counterMachine = createMachine(
-  {
-    id: 'counter',
-    initial: 'active',
-    context: {
-      count: 0,
-    },
-    states: {
-      active: {
-        on: {
-          INCREMENT: { actions: 'incrementCount' },
-          DECREMENT: { actions: 'decrementCount' },
-        },
-      },
-    },
-  },
-  {
-    actions: {
-      incrementCount: (context) => (context.count += 1),
-      decrementCount: (context) => (context.count -= 1),
-    },
-  },
-);
-```
-
----
-
-# XState
-
-```js
-function App() {
-  const [state, send] = useMachine(counterMachine);
-
-  return (
-    <div>
-      <CounterDisplay count={state.context.count} />
-      <CounterControls dispatch={send} />
-    </div>
-  );
-}
-
-function CounterDisplay({ count }) {
-  return <h1>{count}</h1>;
-}
-
-function CounterControls({ dispatch }) {
-  return (
-    <div>
-      <button onClick={() => dispatch('INCREMENT')}>Increment</button>
-      <button onClick={() => dispatch('DECREMENT')}>Decrement</button>
-    </div>
-  );
-}
-```
+<h3><i class="fab fa-twitter" style="color: #1DA1F2;" /> dai_shi</h3>
 
 ---
 
@@ -517,10 +669,10 @@ function CounterControls({ dispatch }) {
 
 <br />
 
-#### <b style="color: #6EF0B3;">ПРЕИМУЩЕСТВА</b>
-
 - Машина состояний позволяет описывать сложные состояния и переходы между ними
+
 - Простые асинхронные обновления
+
 - Простая реализация undo/redo и time travel
 
 ---
@@ -596,8 +748,12 @@ const CounterControls = () => {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
-# MobX
+# MobX - Store providers
+
+::left::
 
 <br />
 
@@ -605,21 +761,17 @@ const CounterControls = () => {
 
 <br />
 
-- глобальный объект, создаётся при загрузке файла
+- глобальный объект
+- занимает память
 - тестируемость
 
 <br />
 
-<v-click>
-
 ### <span style="color: #6EF0B3;">Решение</span>
 
 Связать состояние с React-компонентами с помощью React.Context
-</v-click>
 
----
-
-# MobX - Store providers
+::right::
 
 ```js
 export const getStoreProvider = (StoreClass) => {
@@ -628,29 +780,51 @@ export const getStoreProvider = (StoreClass) => {
   const StoreProvider = ({ children }) => {
     const store = new StoreClass();
 
-    return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+    return (
+      <StoreContext.Provider value={store}>
+        {children}
+      </StoreContext.Provider>
+    );
   };
 
   const useStore = () => {
     const store = useContext(StoreContext);
 
-    if (store === null) {
-      throw new Error(`${StoreClass.name}} is not initialized.`);
+    if (store === null) { 
+      throw new Error(`${StoreClass.name}} is not initialized.`); 
     }
 
     return store;
   };
-
-  return {
-    StoreProvider,
-    useStore,
-  };
+  return { StoreProvider, useStore };
 };
 ```
 
 ---
+layout: TwoColumnCode
+---
 
 # MobX - Store providers
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+<br />
+
+- глобальный объект
+- занимает память
+- тестируемость
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Связать состояние с React-компонентами с помощью React.Context
+
+::right::
 
 ```js
 class CounterStore {
@@ -663,12 +837,37 @@ class CounterStore {
   // actions...
 }
 
-export const { StoreProvider: CounterStoreProvider, useStore: useCounterStore } = getStoreProvider(CounterStore);
+export const { 
+  StoreProvider: CounterStoreProvider, 
+  useStore: useCounterStore 
+} = getStoreProvider(CounterStore);
 ```
 
 ---
+layout: TwoColumnCode
+---
 
 # MobX - Store providers
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+<br />
+
+- глобальный объект
+- занимает память
+- тестируемость
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Связать состояние с React-компонентами с помощью React.Context
+
+::right::
 
 ```js
 const App = () => {
@@ -684,8 +883,30 @@ const App = () => {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
 # MobX - Store providers
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+<br />
+
+- глобальный объект
+- занимает память
+- тестируемость
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Связать состояние с React-компонентами с помощью React.Context
+
+::right::
 
 ```js
 const CounterDisplay = observer(() => {
@@ -707,31 +928,29 @@ const CounterControls = () => {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
-# MobX
+# MobX - Зависимости
+
+::left::
 
 <br />
 
 ### <span style="color: #FF859D;">Проблема</span>
 
-Мы хотим иметь изолированное хранилище для части приложения, но оно имеет зависимости от корневого или других хранилищ
+Изолированные хранилища имеют внешние зависимости
 
 <br />
-
-<v-click>
 
 ### <span style="color: #6EF0B3;">Решение</span>
 
 Добавить механизмы для внедрения зависимостей
 
-- setFromProps - из родительского компонента
-- useDeps - из других хранилищ
+- <b style="color: #C4CAFF;">из родительского компонента</b>
+- из других хранилищ
 
-</v-click>
-
----
-
-# MobX - Dependencies
+::right::
 
 ```js
 const Folder = observer(() => {
@@ -746,22 +965,39 @@ const Folder = observer(() => {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
-# MobX - Dependencies
+# MobX - Зависимости
 
-Вернёмся к нашему провайдеру...
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+Изолированные хранилища имеют внешние зависимости
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Добавить механизмы для внедрения зависимостей
+
+- <b style="color: #C4CAFF;">из родительского компонента</b>
+- из других хранилищ
+
+::right::
 
 ```js
 export const getStoreProvider = (StoreClass) => {
-  const StoreContext = createContext(null);
-
+  // ...
   const StoreProvider = ({ children, ...props }) => {
     const store = new StoreClass();
 
     // init props
-    store.setFromProps?.(props);
-
     const propsRef = useRef(props);
+    store.setFromProps?.(props);
 
     // update props
     useLayoutEffect(() => {
@@ -770,16 +1006,39 @@ export const getStoreProvider = (StoreClass) => {
       }
     }, [store, props]);
 
-    return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+    return (
+      <StoreContext.Provider value={store}>
+        {children}
+      </StoreContext.Provider>
+    );
   };
-
   // ...
 };
 ```
-
+---
+layout: TwoColumnCode
 ---
 
-# MobX - Dependencies
+# MobX - Зависимости
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+Изолированные хранилища имеют внешние зависимости
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Добавить механизмы для внедрения зависимостей
+
+- <b style="color: #C4CAFF;">из родительского компонента</b>
+- из других хранилищ
+
+::right::
 
 ```js
 class FolderStore {
@@ -796,8 +1055,29 @@ class FolderStore {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
-# MobX - Dependencies
+# MobX - Зависимости
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+Изолированные хранилища имеют внешние зависимости
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Добавить механизмы для внедрения зависимостей
+
+- из родительского компонента
+- <b style="color: #C4CAFF;">из других хранилищ</b>
+
+::right::
 
 ```js
 export const getStoreProvider = (StoreClass, useDeps = () => []) => {
@@ -810,7 +1090,11 @@ export const getStoreProvider = (StoreClass, useDeps = () => []) => {
       return new StoreClass(...deps);
     }, deps);
 
-    return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+    return (
+      <StoreContext.Provider value={store}>
+        {children}
+      </StoreContext.Provider>
+    );
   };
 
   // ...
@@ -818,8 +1102,29 @@ export const getStoreProvider = (StoreClass, useDeps = () => []) => {
 ```
 
 ---
+layout: TwoColumnCode
+---
 
-# MobX - Dependencies
+# MobX - Зависимости
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+Изолированные хранилища имеют внешние зависимости
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Добавить механизмы для внедрения зависимостей
+
+- из родительского компонента
+- <b style="color: #C4CAFF;">из других хранилищ</b>
+
+::right::
 
 ```js
 class FolderStore {
@@ -834,45 +1139,67 @@ class FolderStore {
   }
 }
 
-export const { StoreProvider: FolderStoreProvider, useStore: useFolderStore } = getStoreProvider(FolderStore, () => [
-  useAppStore(),
-]);
+export const { 
+  StoreProvider: FolderStoreProvider,
+  useStore: useFolderStore
+} = getStoreProvider(
+  FolderStore,
+  () => [useAppStore()]
+);
 ```
 
 ---
-
-# MobX - Dependencies
-
-```js
-export const getAppDependantStoreProvider = (store) => getStoreProvider(store, () => [useAppStore()]);
-
-export const { StoreProvider: FolderStoreProvider, useStore: useFolderStore } =
-  getAppDependantStoreProvider(FolderStore);
-```
-
+layout: TwoColumnCode
 ---
 
-# MobX - Subscriptions
+# MobX - Зависимости
+
+::left::
 
 <br />
 
 ### <span style="color: #FF859D;">Проблема</span>
 
-Мы хотим иметь автоматические действия после инициализации хранилища, например, загрузить данные
+Многие хранилища зависят от корневого
 
 <br />
 
-<v-click>
+### <span style="color: #6EF0B3;">Решение</span>
+
+Обернуть часто используемую зависимость
+
+::right::
+
+```js
+export const getAppDependantStoreProvider = 
+  (store) => getStoreProvider(store, () => [ useAppStore() ]);
+
+export const { 
+  StoreProvider: FolderStoreProvider,
+  useStore: useFolderStore
+} = getAppDependantStoreProvider(FolderStore);
+```
+---
+layout: TwoColumnCode
+---
+
+# MobX - Подписки
+
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+При создании хранилища нужно заполнить его данными
+
+<br />
 
 ### <span style="color: #6EF0B3;">Решение</span>
 
 Добавить в хранилище реакции и механизм подписки
 
-</v-click>
-
----
-
-# MobX - Subscriptions
+::right::
 
 ```js
 class FolderStore {
@@ -884,19 +1211,35 @@ class FolderStore {
     return this.appStore.selectedFolderId;
   }
 
-  loadFolders = async () => {
-    this.data = await myApi.loadFolders(this.folderId);
+  loadFolderData = async () => {
+    this.data = await myApi.loadFolderData(this.folderId);
   };
 
-  subscribe = () => reaction(() => [this.folderId], this.loadFolders, { fireImmediately: true });
+  subscribe = () => reaction(() => [this.folderId], this.loadFolderData);
 }
 ```
 
 ---
+layout: TwoColumnCode
+---
 
-# MobX - Subscriptions
+# MobX - Подписки
 
-Вернёмся к нашему провайдеру...
+::left::
+
+<br />
+
+### <span style="color: #FF859D;">Проблема</span>
+
+При создании хранилища нужно заполнить его данными
+
+<br />
+
+### <span style="color: #6EF0B3;">Решение</span>
+
+Добавить в хранилище реакции и механизм подписки
+
+::right::
 
 ```js
 export const getStoreProvider = (StoreClass) => {
@@ -911,7 +1254,11 @@ export const getStoreProvider = (StoreClass) => {
       return store.subscribe?.();
     }, [store]);
 
-    return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
+    return (
+      <StoreContext.Provider value={store}>
+        {children}
+      </StoreContext.Provider>
+    );
   };
 
   // ...
@@ -920,127 +1267,7 @@ export const getStoreProvider = (StoreClass) => {
 
 ---
 
-# MobX - Utility stores
-
-<br />
-
-### <span style="color: #FF859D;">Проблема</span>
-
-Разные страницы могут иметь повторяющуюся функциональность: состояние и действия
-
-Например, сортировка таблицы данных
-
-<br />
-
-<v-click>
-
-### <span style="color: #6EF0B3;">Решение</span>
-
-Использовать вспомогательные хранилища (utility stores)
-</v-click>
-
----
-
-# MobX - Utility stores
-
-```js
-export class OrderByStore {
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  // field key
-  orderBy = undefined;
-  // asc | desc | undefined
-  direction = undefined;
-
-  toggleOrder = (orderBy) => {
-    if (!this.orderBy || this.orderBy !== orderBy) {
-      this.orderBy = orderBy;
-      this.direction = 'desc';
-    } else if (this.orderBy === orderBy) {
-      if (this.direction === OrderByDirection.DESC) {
-        this.direction = 'asc';
-      } else {
-        this.orderBy = undefined;
-        this.direction = undefined;
-      }
-    }
-  };
-}
-
-export const { StoreProvider: OrderByStoreStoreProvider, useStore: useOrderByStore } = getStoreProvider(OrderByStore);
-```
-
----
-
-# MobX - Utility stores
-
-```js
-class DocumentsStore() {
-  constructor() {
-    makeAutoObservable(this)
-  }
-
-  // array of documents
-  documents = undefined
-
-  order = new OrderByStore()
-
-  // ...
-}
-
-export const { StoreProvider: DocumentsStoreProvider, useStore: useDocumentsStore } =
-  getStoreProvider(DocumentsStore);
-```
-
----
-
-# MobX - Utility stores
-
-```js
-export const DocumentTable = observer(() => {
-  const store = useDocumentsStore();
-
-  return (
-    <OrderByStoreProvider>
-      <table>
-        <thead>
-          <SortableHeader orderBy="title">Name</SortableHeader>
-          <SortableHeader orderBy="modified_on">Modified On</SortableHeader>
-          <SortableHeader orderBy="modified_by">Modified By</SortableHeader>
-        </thead>
-
-        <tbody>
-          {store.documents.map((document) => (
-            <DocumentRow key={document.id} document={document} />
-          ))}
-        </tbody>
-      </table>
-    </OrderByStoreProvider>
-  );
-});
-```
-
----
-
-# MobX - Utility stores
-
-```js
-export const SortableHeader = observer(({ orderBy }) => {
-  const store = useOrderByStore();
-
-  return (
-    <th onClick={() => store.toggleOrder(orderBy)}>
-      {children} <SortIcon active={orderBy === store.orderBy} direction={store.direction} />
-    </th>
-  );
-});
-```
-
----
-
-# Как MobX помог решить проблемы Redux
+# Как MobX помогает решить проблемы Redux
 
 <br />
 
@@ -1068,11 +1295,11 @@ export const SortableHeader = observer(({ orderBy }) => {
 
 </v-click>
 
-- #### Иммутабельность
+- #### TypeScript
 
 <v-click>
 
-&nbsp;<span style="color: #6EF0B3;">-></span> Реактивность
+&nbsp;<span style="color: #6EF0B3;">-></span> Описываете только типы своих данных
 
 </v-click>
 
@@ -1100,10 +1327,12 @@ layout: center
 # Спасибо за внимание!
 
 <h3 class="contacts">
-  @titovmx
+  Максим @titovmx
   <span class="icons">
     <i class="fab fa-telegram" />
     <i class="fab fa-linkedin" />
     <i class="fab fa-github" />
+    <i class="fab fa-twitter" />
   </span>
+  <img src="/qr.png" width="128rem" style="margin-top: 1rem;" />
 </h3>
